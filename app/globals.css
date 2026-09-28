@@ -377,6 +377,8 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .city-search button { padding:0 16px; border:0; border-radius:11px; background:#303034; color:white; font-weight:700; cursor:pointer; }
 .city-search button:disabled { opacity:.5; cursor:default; }
 .auth-success { margin:1px 0 0; color:#477467; font-size:11px; line-height:1.5; }
+.auth-form > .auth-account-link { height:50px; margin-top:5px; padding:0 17px; border:0; border-radius:15px; display:flex; align-items:center; justify-content:space-between; background:#303034; color:#fff; font-size:13px; font-weight:800; text-decoration:none; }
+.auth-form > .auth-account-link span { font-size:18px; }
 .auth-divider { display:flex; align-items:center; gap:12px; margin:18px 0 12px; color:#96969e; font-size:10px; }
 .auth-divider::before,.auth-divider::after { content:""; flex:1; height:1px; background:#e3e3e7; }
 .auth-oauth { display:grid; grid-template-columns:1fr 1fr; gap:8px; }

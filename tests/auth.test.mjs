@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   AuthConfigurationError,
-  accountUserId,
+  agentIdentityUserId,
   SESSION_COOKIE_NAME,
   authenticateInvite,
   createSessionToken,
@@ -62,7 +62,7 @@ test("production auth fails closed for placeholder or weak configuration", () =>
   });
 });
 
-test("Supabase account sessions use a stable isolated owner without changing invite owners", () => {
+test("Agent Identity account sessions use a stable isolated owner without changing invite owners", () => {
   withAuthEnv({
     NODE_ENV: "production",
     ENV: "prod",
@@ -71,10 +71,12 @@ test("Supabase account sessions use a stable isolated owner without changing inv
     OWNER_ID_SECRET: "owner-secret-for-tests-only-0987654321",
   }, () => {
     const inviteId = authenticateInvite("invite-7Kp2Qm9Xv4Ls");
-    const accountId = accountUserId("12345678-1234-1234-1234-123456789abc");
+    const accountId = agentIdentityUserId("https://identity.example.test/pool", "user-123");
     assert.match(accountId, /^usr-[a-f0-9]{40}$/);
     assert.notEqual(accountId, inviteId);
-    assert.equal(accountId, accountUserId("12345678-1234-1234-1234-123456789abc"));
+    assert.equal(accountId, agentIdentityUserId("https://identity.example.test/pool", "user-123"));
+    assert.notEqual(accountId, agentIdentityUserId("https://identity.example.test/other", "user-123"));
+    assert.notEqual(accountId, agentIdentityUserId("https://identity.example.test/pool", "user-456"));
     const token = createSessionToken(accountId, Date.now(), "account");
     assert.equal(verifySessionToken(token)?.provider, "account");
     assert.equal(verifySessionToken(token)?.userId, accountId);

@@ -50,7 +50,7 @@ export function isInviteLoginAvailable() {
 export function isAuthenticationRequired() {
   return process.env.NODE_ENV === "production"
     || env("ENV").toLowerCase() === "prod"
-    || Boolean(env("INVITE_CODES") || env("SESSION_SECRET") || env("OWNER_ID_SECRET"));
+    || Boolean(env("INVITE_CODES") || env("SESSION_SECRET") || env("OWNER_ID_SECRET") || env("AGENT_IDENTITY_ISSUER"));
 }
 
 function authConfiguration(requireInvite = true) {
@@ -96,10 +96,10 @@ export function authenticateInvite(inviteCode: string): string | null {
   return match ? deriveUserId(match, ownerIdSecret) : null;
 }
 
-export function accountUserId(externalUserId: string) {
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(externalUserId)) throw new AuthenticationRequiredError();
+export function agentIdentityUserId(issuer: string, subject: string) {
+  if (!issuer || !subject || issuer.length > 2048 || subject.length > 2048) throw new AuthenticationRequiredError();
   const { ownerIdSecret } = authConfiguration(false);
-  return deriveUserId(`supabase:${externalUserId}`, ownerIdSecret);
+  return deriveUserId(`agent-identity:${issuer}\0${subject}`, ownerIdSecret);
 }
 
 function signTokenBody(body: string, sessionSecret: string) {
