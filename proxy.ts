@@ -6,6 +6,7 @@ const PUBLIC_API_ROUTES = new Set([
   "/api/auth/login",
   "/api/auth/logout",
   "/api/auth/session",
+  "/api/auth/account/session",
   "/api/weather",
 ]);
 

@@ -18,8 +18,10 @@ Layra 是一款支持桌面和手机的个人 AI 衣柜与穿搭助手。用户�
 - 一次上传 1–5 张照片，识别衣物、鞋履、帽子、腰带、包和首饰等单品
 - 按识别框逐件裁剪，使用 veImageX productv2 生成 1024×1024 白底商品图并补充结构化穿搭标签
 - 衣柜分类浏览、编辑、清洗状态、删除和多用户数据隔离
-- AI 穿搭推荐、历史记录、收藏搭配和模特试穿
-- 邀请码登录，服务端签名会话 Cookie，有效期 7 天
+- AI 穿搭推荐、历史记录、收藏搭配和模特试穿；不上传本人照片也可生成不露脸假人效果图
+- 推荐卡片可直接标记“不适合我”“今天穿这套”或收藏；排除相同核心单品组合，换鞋或配饰不会算作新的一套
+- AI 识别后可改衣物材质、图案和适用场景；天气支持主动定位或搜索城市
+- 邀请码登录与可选的 Supabase 邮箱账号登录，服务端签名会话 Cookie，有效期 7 天
 - TOS 保存图片；轻量生产模式使用 SQLite + TOS 快照恢复
 
 ## 技术与运行方式
@@ -75,9 +77,13 @@ npm run build
 
 ```dotenv
 ENV=prod
-INVITE_CODES=<逗号分隔的高熵邀请码，每个至少 12 个字符>
+INVITE_CODES=<启用邀请码入口时配置，逗号分隔，每个至少 12 个字符>
 SESSION_SECRET=<至少 32 个字符的随机密钥>
 OWNER_ID_SECRET=<另一份至少 32 个字符的随机密钥>
+
+# 可选：启用邮箱注册、登录、密码重置与 OAuth，需在镜像构建前配置
+NEXT_PUBLIC_SUPABASE_URL=<v1 Supabase 项目 URL>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<该项目的 publishable key>
 
 DASHSCOPE_API_KEY=<secret>
 DASHSCOPE_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
@@ -132,7 +138,9 @@ ImageX 调用使用当前 veFaaS 请求的 Role STS 凭据，因此该 Role 除 
 - 邀请码会稳定映射为用户 ID，所有数据查询均按该 ID 隔离。
 - 轮换 `SESSION_SECRET` 会让全部用户退出登录。
 - 轮换 `OWNER_ID_SECRET` 或替换已使用的邀请码会改变用户 ID，使原衣柜看起来“消失”。上线后不要随意轮换；确需轮换时先做数据迁移。
-- 生产缺少或误配任一认证变量时，接口会拒绝服务，不能降级成匿名访问。
+- Supabase 账号使用其用户 ID 派生独立衣柜 ID；它不会自动继承同一人的邀请码衣柜。需要合并旧数据时，应先确认账号归属并另做迁移。
+- Google/GitHub 登录和找回密码邮件需在 Supabase 控制台启用相应 Provider、邮件模板，并把本站地址加入 Auth Redirect URLs；未配置时保留邀请码入口。
+- 生产缺少或误配 `SESSION_SECRET`、`OWNER_ID_SECRET` 时，账号和邀请码会话接口会拒绝服务，不能降级成匿名访问；未配置 `INVITE_CODES` 时邀请码入口不可用。
 
 ## 既有本地数据迁移
 

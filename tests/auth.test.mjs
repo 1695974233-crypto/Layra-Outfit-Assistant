@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   AuthConfigurationError,
+  accountUserId,
   SESSION_COOKIE_NAME,
   authenticateInvite,
   createSessionToken,
@@ -58,5 +59,25 @@ test("production auth fails closed for placeholder or weak configuration", () =>
     OWNER_ID_SECRET: "replace_with_owner_secret_12345678",
   }, () => {
     assert.throws(() => authenticateInvite("replace_with_invite_code"), AuthConfigurationError);
+  });
+});
+
+test("Supabase account sessions use a stable isolated owner without changing invite owners", () => {
+  withAuthEnv({
+    NODE_ENV: "production",
+    ENV: "prod",
+    INVITE_CODES: "invite-7Kp2Qm9Xv4Ls",
+    SESSION_SECRET: "session-secret-for-tests-only-1234567890",
+    OWNER_ID_SECRET: "owner-secret-for-tests-only-0987654321",
+  }, () => {
+    const inviteId = authenticateInvite("invite-7Kp2Qm9Xv4Ls");
+    const accountId = accountUserId("12345678-1234-1234-1234-123456789abc");
+    assert.match(accountId, /^usr-[a-f0-9]{40}$/);
+    assert.notEqual(accountId, inviteId);
+    assert.equal(accountId, accountUserId("12345678-1234-1234-1234-123456789abc"));
+    const token = createSessionToken(accountId, Date.now(), "account");
+    assert.equal(verifySessionToken(token)?.provider, "account");
+    assert.equal(verifySessionToken(token)?.userId, accountId);
+    assert.throws(() => createSessionToken(accountId), /请先登录/);
   });
 });
