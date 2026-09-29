@@ -99,7 +99,7 @@ DASHSCOPE_GARMENT_RECONSTRUCTION_CANDIDATES=2
 
 ARK_API_KEY=<secret>
 # 填写当前账号已开通且 API Key 已授权的视觉模型或推理接入点 ID。
-ARK_VISION_MODEL=
+ARK_VISION_MODEL=doubao-seed-2-0-lite-260428
 ARK_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
 # 有 Ark 配置时默认作为衣柜识别主链路；设为 dashscope 才会优先阿里云。
 WARDROBE_VISION_PROVIDER=volcengine
