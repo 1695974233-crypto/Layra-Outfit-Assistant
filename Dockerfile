@@ -3,18 +3,26 @@
 # 监听 0.0.0.0:8000（veFaaS 默认端口，避开 9000/9001/9990）
 
 # ---- 依赖安装（含 dev，供构建阶段使用）----
-FROM node:22-alpine AS deps
+FROM --platform=$BUILDPLATFORM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,id=yida-npm-cache,target=/root/.npm,sharing=locked \
+  npm ci --fetch-retries=5 --fetch-retry-maxtimeout=120000
 
 # ---- 构建 ----
-FROM node:22-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
+
+# ---- 按目标架构安装运行依赖（包括 sharp 的原生模块）----
+FROM node:22-alpine AS runtime-deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN --mount=type=cache,id=yida-npm-cache,target=/root/.npm,sharing=locked \
+  npm ci --omit=dev --fetch-retries=5 --fetch-retry-maxtimeout=120000
 
 # ---- 运行（standalone 产物）----
 FROM node:22-alpine AS runner
@@ -32,6 +40,7 @@ COPY --from=builder /app/public ./public
 # Next.js standalone 输出
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=runtime-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 # veFaaS 只保证 /tmp 可写；轻量生产模式的 SQLite 位于 /tmp/data。
 RUN mkdir -p /tmp/data && chown nextjs:nodejs /tmp/data

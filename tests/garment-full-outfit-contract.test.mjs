@@ -78,7 +78,7 @@ test("视觉识别优先使用显式配置的火山方舟，并保留可选的 D
   assert.match(analyzer, /if \(provider\.name === "dashscope"\) requestBody\.enable_thinking = false/);
   assert.match(analyzer, /if \(provider\.name === "volcengine-ark"\) requestBody\.thinking = \{ type: "disabled" \}/);
   assert.match(analyzer, /!isProviderBillingFailure\(error\)/);
-  assert.match(envExample, /^ARK_VISION_MODEL=$/m);
+  assert.match(envExample, /^ARK_VISION_MODEL=doubao-seed-2-0-lite-260428$/m);
   assert.match(envExample, /^ARK_BASE_URL=https:\/\/ark\.cn-beijing\.volces\.com\/api\/v3$/m);
   assert.match(envExample, /^WARDROBE_VISION_PROVIDER=volcengine$/m);
 });

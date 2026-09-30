@@ -27,6 +27,7 @@ export type VolcengineImageXCutout = {
 };
 
 const IMAGEX_API_VERSION = "2018-08-01";
+const IMAGEX_SEGMENT_API_VERSION = "2023-05-01";
 const IMAGEX_SERVICE = "imagex";
 const DEFAULT_IMAGEX_HOST = "imagex.volcengineapi.com";
 const DEFAULT_IMAGEX_REGION = "cn-north-1";
@@ -150,7 +151,11 @@ async function callImageX(
   if (!credentials) throw new Error("火山引擎 ImageX 访问密钥未配置");
   const host = getServerEnv("VOLC_IMAGEX_HOST") || DEFAULT_IMAGEX_HOST;
   const body = bodyValue ? JSON.stringify(bodyValue) : "";
-  const query = { ...parameters, Action: action, Version: IMAGEX_API_VERSION };
+  const query = {
+    ...parameters,
+    Action: action,
+    Version: action === "GetSegmentImage" ? IMAGEX_SEGMENT_API_VERSION : IMAGEX_API_VERSION,
+  };
   const headers = signedHeaders(method, query, body, credentials);
   if (body) headers["Content-Type"] = "application/json; charset=utf-8";
   const remaining = deadlineAt - Date.now();

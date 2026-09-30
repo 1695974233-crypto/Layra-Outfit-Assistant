@@ -14,6 +14,7 @@ test("ImageX productv2 只在多单品检测后逐件抠图，且使用短时 TO
   ]);
 
   assert.match(imagex, /IMAGEX_API_VERSION = "2018-08-01"/);
+  assert.match(imagex, /IMAGEX_SEGMENT_API_VERSION = "2023-05-01"/);
   assert.match(imagex, /Class: "productv2"/);
   assert.match(imagex, /Refine: true/);
   assert.match(imagex, /TransBg: true/);
